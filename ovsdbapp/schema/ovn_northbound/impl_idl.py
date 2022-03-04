@@ -226,6 +226,12 @@ class OvnNbApiIdlImpl(ovs_idl.Backend, api.API):
         return cmd.LrpDelGatewayChassisCommand(self, port,
                                                gateway_chassis, if_exists)
 
+    def lrp_add_networks(self, port, networks):
+        return cmd.LrpAddNetworksCommand(self, port, networks)
+
+    def lrp_del_networks(self, port, networks):
+        return cmd.LrpDelNetworksCommand(self, port, networks)
+
     def lr_route_add(self, router, prefix, nexthop, port=None,
                      policy='dst-ip', route_table=None, may_exist=False):
         return cmd.LrRouteAddCommand(self, router, prefix, nexthop, port,
