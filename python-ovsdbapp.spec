@@ -10,7 +10,7 @@ A library for writing Open vSwitch OVSDB-based applications.
 Python OVSDB Application Library tests. \
 This package contains Python OVSDB Application Library test files.
 
-%if 0%{?el8}
+%if 0%{?el8} || 0%{?redos}
 %global el_python3_pkgversion 3
 %else
 %global el_python3_pkgversion 36
@@ -20,7 +20,7 @@ This package contains Python OVSDB Application Library test files.
 
 Name:       python-%{library}
 Version:    2.5.0
-Release:    1.CROC1@BUILDID@%{?dist}
+Release:    1.CROC2@BUILDID@%{?dist}
 Summary:    Python OVSDB Application Library
 License:    ASL 2.0
 URL:        http://launchpad.net/%{library}/
