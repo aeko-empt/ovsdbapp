@@ -1499,7 +1499,10 @@ class LrPolicyAddCommand(cmd.AddCommand):
     def run_idl(self, txn):
         lr = self.api.lookup('Logical_Router', self.router)
         for policy in lr.policies:
-            policy_chain = policy.chain[0]
+            try:
+                policy_chain = policy.chain[0]
+            except (AttributeError, IndexError):
+                policy_chain = const.DEFAULT_CHAIN
             if ((self.priority, self.match, self.chain) ==
                     (policy.priority, policy.match, policy_chain)):
                 if self.may_exist:
@@ -1512,7 +1515,8 @@ class LrPolicyAddCommand(cmd.AddCommand):
         policy.priority = self.priority
         policy.match = self.match
         policy.action = self.action
-        policy.chain = self.chain
+        if idlutils.table_has_column(self.api.idl, self.table_name, 'chain'):
+            policy.chain = [self.chain] if self.chain else []
         self.set_columns(policy, **self.columns)
         lr.addvalue('policies', policy)
         self.result = policy.uuid
@@ -1542,8 +1546,12 @@ class LrPolicyDelCommand(cmd.BaseCommand):
         lr = self.api.lookup('Logical_Router', self.router)
         found = False
         for policy in lr.policies:
+            try:
+                policy_chain = policy.chain[0]
+            except (AttributeError, IndexError):
+                policy_chain = const.DEFAULT_CHAIN
             if (idlutils.row_match(policy, self.conditions) and
-                    policy.chain[0] == self.chain):
+                    policy_chain == self.chain):
                 found = True
                 lr.delvalue('policies', policy)
                 policy.delete()
@@ -1567,7 +1575,10 @@ class LrPolicyListCommand(cmd.ReadOnlyCommand):
         if self.chain is not None:
             self.result = [rowview.RowView(r)
                            for r in lr.policies
-                           if r.chain[0] == self.chain]
+                           if hasattr(r, 'chain') and (
+                           (r.chain and r.chain[0] == self.chain) or
+                           (not r.chain and
+                            self.chain == const.DEFAULT_CHAIN))]
         else:
             self.result = [rowview.RowView(r) for r in lr.policies]
 

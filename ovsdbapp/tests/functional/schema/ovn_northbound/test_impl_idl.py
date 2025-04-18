@@ -1326,15 +1326,34 @@ class TestLogicalRouterOps(OvnNorthboundTest):
         self.assertEqual(policy.nexthop, [])
         self.assertEqual(policy.nexthops, [])
 
+    def test_lr_policy_add_default_chain(self):
+        if not idlutils.table_has_column(self.api.idl, 'Logical_Router_Policy',
+                                         'chain'):
+            self.skipTest('Chain column not supported in '
+                          'Logical_Router_Policy schema')
+        priority = 10
+        action = const.POLICY_ACTION_ALLOW
+        policy = self._lr_policy_add(priority, self.lr_policy_match1, action)
+        self.assertEqual(policy.chain, [])  # for default chain, chain is empty
+
     def test_lr_policy_add_custom_chain(self):
+        if not idlutils.table_has_column(self.api.idl, 'Logical_Router_Policy',
+                                         'chain'):
+            self.skipTest('Chain column not supported in '
+                          'Logical_Router_Policy schema')
+
         priority = 10
         action = const.POLICY_ACTION_ALLOW
         chain = 'custom-chain'
         policy = self._lr_policy_add(priority, self.lr_policy_match1, action,
                                      chain=chain)
-        self.assertEqual(policy.chain[0], chain)
+        self.assertEqual(policy.chain, [chain])
 
     def test_lr_policy_add_same_priority_match_different_chains(self):
+        if not idlutils.table_has_column(self.api.idl, 'Logical_Router_Policy',
+                                         'chain'):
+            self.skipTest('Chain column not supported in '
+                          'Logical_Router_Policy schema')
         priority = 10
         action = const.POLICY_ACTION_ALLOW
         policy1 = self._lr_policy_add(priority, self.lr_policy_match1, action,
@@ -1344,6 +1363,10 @@ class TestLogicalRouterOps(OvnNorthboundTest):
         self.assertNotEqual(policy1.uuid, policy2.uuid)
 
     def test_lr_policy_add_jump(self):
+        if not idlutils.table_has_column(self.api.idl, 'Logical_Router_Policy',
+                                         'chain'):
+            self.skipTest('Chain column not supported in '
+                          'Logical_Router_Policy schema')
         priority = 10
         action = const.POLICY_ACTION_JUMP
         policy = self._lr_policy_add(priority, self.lr_policy_match1, action,
@@ -1352,6 +1375,11 @@ class TestLogicalRouterOps(OvnNorthboundTest):
         self.assertEqual(policy.jump_chain, ['jump-chain'])
 
     def test_lr_policy_add_jump_custom_chain(self):
+        if not idlutils.table_has_column(self.api.idl, 'Logical_Router_Policy',
+                                         'chain'):
+            self.skipTest('Chain column not supported in '
+                          'Logical_Router_Policy schema')
+
         priority = 10
         action = const.POLICY_ACTION_JUMP
         policy = self._lr_policy_add(priority,
@@ -1360,7 +1388,7 @@ class TestLogicalRouterOps(OvnNorthboundTest):
                                      jump_chain='jump-chain')
         self.assertEqual(policy.action, action)
         self.assertEqual(policy.jump_chain, ['jump-chain'])
-        self.assertEqual(policy.chain[0], 'custom-chain')
+        self.assertEqual(policy.chain, ['custom-chain'])
 
     def test_lr_policy_add_drop(self):
         priority = 10
@@ -1492,6 +1520,10 @@ class TestLogicalRouterOps(OvnNorthboundTest):
         self.assertEqual(len(lr.policies), 3)
 
     def test_lr_policy_del_by_chain(self):
+        if not idlutils.table_has_column(self.api.idl, 'Logical_Router_Policy',
+                                         'chain'):
+            self.skipTest('Chain column not supported in '
+                          'Logical_Router_Policy schema')
         lr = self._three_policies()
 
         initial_count = len(lr.policies)
@@ -1533,6 +1565,10 @@ class TestLogicalRouterOps(OvnNorthboundTest):
         self.assertEqual(lr.policies, policies)
 
     def test_lr_policy_list_by_chain(self):
+        if not idlutils.table_has_column(self.api.idl, 'Logical_Router_Policy',
+                                         'chain'):
+            self.skipTest('Chain column not supported in '
+                          'Logical_Router_Policy schema')
         lr = self._three_policies()
         self._lr_policy_add(20,
                             self.lr_policy_match1,
