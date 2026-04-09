@@ -1774,7 +1774,15 @@ class LbAddIpPortMappingCommand(cmd.BaseCommand):
         self.lb = lb
         self.endpoint_ip = str(netaddr.IPAddress(endpoint_ip))
         self.port_name = port_name
-        self.source_ip = str(netaddr.IPAddress(source_ip))
+        if ":" in source_ip:
+            addr, az_name = source_ip.split(":")
+            netaddr.IPAddress(addr)
+            if not az_name:
+                raise ValueError("Empty AZ name specified for source_ip %s"
+                                 % source_ip)
+        else:
+            netaddr.IPAddress(source_ip)
+        self.source_ip = source_ip
 
     def run_idl(self, txn):
         lb = self.api.lookup(self.table, self.lb)
